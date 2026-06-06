@@ -14,7 +14,7 @@ export function buildApp(cfg: Config): Hono {
   const eagle = new EagleClient(cfg.eagleApi, cfg.eagleToken);
   const recipes = new RecipeLoader({
     token: cfg.airtableToken, baseId: cfg.airtableBaseId,
-    tableId: cfg.productTypeTableId, cacheDir: cfg.dataDir, ttlMs: cfg.recipeTtlMs,
+    tableId: cfg.recipesTableId, cacheDir: cfg.dataDir, ttlMs: cfg.recipeTtlMs,
   });
   const service = new AssetsService(
     { eagle, recipes, runRecipe, backlink: backlinkDesign },

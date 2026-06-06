@@ -8,7 +8,7 @@ const base = {
   EAGLE_TOKEN: "",
   AIRTABLE_TOKEN: "pat",
   AIRTABLE_BASE_ID: "appX",
-  AIRTABLE_PRODUCT_TYPE_TABLE: "tblP",
+  AIRTABLE_RECIPES_TABLE: "tblP",
   AIRTABLE_DESIGNS_TABLE: "tblD",
   DATA_DIR: "/tmp/eb",
   RECIPE_TTL_MS: "3600000",

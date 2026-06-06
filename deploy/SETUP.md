@@ -18,33 +18,20 @@ Copy `.env.example` → `.env` and fill:
 Eagle's read endpoints work token-free. If `POST /api/assets` returns 401 (write blocked),
 get the token: **Eagle → Preferences → Developer → copy token** → set `EAGLE_TOKEN` in `.env`.
 
-## 3. Airtable — Product Type table (`tblBr361feqXDpdZA`)
+## 3. Airtable — Eagle Recipes table (`tbl3nxPX4QFiTnbxD`) — DONE
 
-Add these fields (recipe definition the processing engine reads):
+A dedicated **Eagle Recipes** table holds the processing recipes (kept separate from the
+Product Type catalog so the catalog stays clean). Fields: `label`, `type`, `print_width`,
+`print_height`, `dpi`, `fit` (contain/cover), `bg`, `bleed_px`, `format` (png/jpeg),
+`upscale` (auto/always/never), `max_upscale`.
 
-| Field | Type | Notes |
-|---|---|---|
-| `type` | Single line text | machine key, e.g. `tee` |
-| `label` | Single line text | human label, e.g. `T-Shirt (DTG)` |
-| `print_width` | Number (integer) | px |
-| `print_height` | Number (integer) | px |
-| `dpi` | Number | default 300 |
-| `fit` | Single select | `contain`, `cover` |
-| `bg` | Single line text | `transparent` or a hex like `#ffffff` |
-| `bleed_px` | Number | default 0 |
-| `format` | Single select | `png`, `jpeg` |
-| `upscale` | Single select | `auto`, `always`, `never` |
-| `max_upscale` | Number | default 4 |
+Seeded rows: **tee** (4500×5400), **sticker** (2000×2000, 24px bleed), **mug** (2475×1155,
+cover, #ffffff). Add more product types by adding rows — no code change. The bridge reads this
+table via `AIRTABLE_RECIPES_TABLE` and caches to `data/recipes.json`.
 
-Seed one row to validate end-to-end:
-`type=tee, label=T-Shirt (DTG), print_width=4500, print_height=5400, dpi=300, fit=contain,
-bg=transparent, bleed_px=0, format=png, upscale=auto, max_upscale=4`
+## 4. Airtable — Designs table (`tblLz44lYKbaU9Nge`) — DONE
 
-## 4. Airtable — Designs table (`tblLz44lYKbaU9Nge`)
-
-Add two single-line-text fields for the back-link:
-- `EagleItemId`
-- `EagleUrl`
+Two single-line-text back-link fields added: `EagleItemId`, `EagleUrl`.
 
 ## 5. Real-ESRGAN (image upscaling)
 

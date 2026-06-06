@@ -5,7 +5,7 @@ export interface Config {
   eagleToken: string;
   airtableToken: string;
   airtableBaseId: string;
-  productTypeTableId: string;
+  recipesTableId: string;
   designsTableId: string;
   dataDir: string;
   recipeTtlMs: number;
@@ -26,7 +26,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     eagleToken: env.EAGLE_TOKEN ?? "",
     airtableToken: req(env, "AIRTABLE_TOKEN"),
     airtableBaseId: req(env, "AIRTABLE_BASE_ID"),
-    productTypeTableId: req(env, "AIRTABLE_PRODUCT_TYPE_TABLE"),
+    recipesTableId: req(env, "AIRTABLE_RECIPES_TABLE"),
     designsTableId: req(env, "AIRTABLE_DESIGNS_TABLE"),
     dataDir: req(env, "DATA_DIR"),
     recipeTtlMs: parseInt(env.RECIPE_TTL_MS ?? "3600000", 10),
