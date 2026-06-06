@@ -83,6 +83,23 @@ export class AssetsService {
     return this.deps.eagle.itemInfo(id);
   }
 
+  /** Persist raw bytes, ingest into Eagle, and stash the original for later processing. */
+  async ingestFromPathBytes(bytes: Uint8Array, filename: string, opts: IngestOptions): Promise<EagleItem> {
+    const { mkdir, writeFile, copyFile } = await import("node:fs/promises");
+    const ext = (filename.split(".").pop() || "png").toLowerCase();
+    const uploadsDir = join(this.cfg.dataDir, "uploads");
+    await mkdir(uploadsDir, { recursive: true });
+    const tmpPath = join(uploadsDir, filename);
+    await writeFile(tmpPath, bytes);
+
+    const item = await this.ingestFromPath(tmpPath, opts);
+
+    const originalsDir = join(this.cfg.dataDir, "originals");
+    await mkdir(originalsDir, { recursive: true });
+    await copyFile(tmpPath, join(originalsDir, `${item.id}.${ext}`));
+    return item;
+  }
+
   async detail(id: string): Promise<{ item: EagleItem; link: AssetLink }> {
     const item = await this.deps.eagle.itemInfo(id);
     return { item, link: parseLink(item.annotation) };
