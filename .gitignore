@@ -1,0 +1,8 @@
+node_modules/
+.next/
+.env
+.env.*
+cache/
+processed/
+*.log
+.DS_Store
