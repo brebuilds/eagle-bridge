@@ -1,6 +1,4 @@
 import { Hono } from "hono";
-import { writeFile, mkdir } from "node:fs/promises";
-import { join } from "node:path";
 import type { AssetsService, IngestOptions } from "../assets/service.js";
 
 // The route layer needs one extra capability over AssetsService: ingest raw bytes.
@@ -70,13 +68,4 @@ export function assetsRoutes(svc: AssetsApi): Hono {
   });
 
   return app;
-}
-
-/** Helper used by index.ts to persist uploaded bytes before ingest. */
-export async function saveOriginal(dataDir: string, filename: string, bytes: Uint8Array): Promise<string> {
-  const dir = join(dataDir, "uploads");
-  await mkdir(dir, { recursive: true });
-  const path = join(dir, filename);
-  await writeFile(path, bytes);
-  return path;
 }
