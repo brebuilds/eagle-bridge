@@ -18,6 +18,19 @@ export interface AssetLink {
   brand?: string;
   source?: "stacks-upload" | "watch-folder" | "n8n" | "api";
   processed?: Record<string, string>; // productType -> relative file path
+  autotags?: AutoTags;
+  autotagError?: string; // last failure reason; cleared on success
+}
+
+// Result of auto-tagging one design image.
+export interface AutoTags {
+  subject: string[];
+  style: string[]; // controlled
+  colors: string[]; // hex, from sharp
+  seo: string[]; // free
+  brandFit: string[]; // controlled
+  model: string;
+  taggedAt: string; // ISO
 }
 
 // A per-product-type processing recipe (from Airtable Product Type table).

@@ -10,6 +10,13 @@ export interface Config {
   dataDir: string;
   recipeTtlMs: number;
   realesrganBin: string;
+  ollamaUrl: string;
+  ollamaVisionModel: string;
+  autotagOnIngest: boolean;
+  autotagConcurrency: number;
+  autotagImagePx: number;
+  autotagTimeoutMs: number;
+  autotagMaxAttempts: number;
 }
 
 function req(env: Record<string, string | undefined>, key: string): string {
@@ -31,5 +38,12 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     dataDir: req(env, "DATA_DIR"),
     recipeTtlMs: parseInt(env.RECIPE_TTL_MS ?? "3600000", 10),
     realesrganBin: req(env, "REALESRGAN_BIN"),
+    ollamaUrl: env.OLLAMA_URL ?? "http://100.113.39.78:11434",
+    ollamaVisionModel: env.OLLAMA_VISION_MODEL ?? "llama3.2-vision:11b",
+    autotagOnIngest: env.AUTOTAG_ON_INGEST === "true",
+    autotagConcurrency: parseInt(env.AUTOTAG_CONCURRENCY ?? "1", 10),
+    autotagImagePx: parseInt(env.AUTOTAG_IMAGE_PX ?? "640", 10),
+    autotagTimeoutMs: parseInt(env.AUTOTAG_TIMEOUT_MS ?? "300000", 10),
+    autotagMaxAttempts: parseInt(env.AUTOTAG_MAX_ATTEMPTS ?? "3", 10),
   };
 }
