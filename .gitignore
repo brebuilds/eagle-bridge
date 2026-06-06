@@ -8,3 +8,4 @@ cache/
 processed/
 *.log
 .DS_Store
+bin/

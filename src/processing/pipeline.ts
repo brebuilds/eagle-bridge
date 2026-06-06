@@ -39,14 +39,20 @@ export async function runRecipe(input: RunRecipeInput): Promise<RunRecipeResult>
   let working = input.inputPath;
   let upscaled = false;
   let warning: string | undefined;
+  const upPath = `${input.outputPath}.upscaled.png`;
   if (factor > 1) {
-    const upPath = `${input.outputPath}.upscaled.png`;
     try {
-      working = await upscaleImage(input.realesrganBin, input.inputPath, upPath, factor);
+      await upscaleImage(input.realesrganBin, input.inputPath, upPath, factor);
+      // Verify the upscaler actually produced a valid image. Real-ESRGAN with
+      // missing/garbage models can exit 0 without writing a usable file, so a
+      // clean exit is not proof of success — confirm the output is readable.
+      await sharp(upPath).metadata();
+      working = upPath;
       upscaled = true;
     } catch (e) {
       warning = `Upscale failed, fell back to resampling: ${(e as Error).message}`;
       working = input.inputPath;
+      upscaled = false;
     }
   }
 
@@ -78,8 +84,8 @@ export async function runRecipe(input: RunRecipeInput): Promise<RunRecipeResult>
   }
   await pipeline.withMetadata({ density: recipe.dpi }).toFile(input.outputPath);
 
-  // cleanup temp upscale file
-  if (upscaled) await rm(`${input.outputPath}.upscaled.png`, { force: true });
+  // cleanup temp upscale file (force ignores a missing/partial file)
+  await rm(upPath, { force: true });
 
   return { outputPath: input.outputPath, upscaled, upscaleFactor: factor, warning };
 }

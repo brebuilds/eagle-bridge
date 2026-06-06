@@ -44,4 +44,20 @@ describe("runRecipe", () => {
     expect(meta.width).toBe(1300);  // 1200 + 50*2
     expect(meta.height).toBe(1600); // 1500 + 50*2
   });
+
+  it("falls back to resampling (still produces print dims) when upscale is needed but the binary is missing", async () => {
+    // small source + upscale required, but realesrganBin does not exist ->
+    // pipeline must fall back to sharp resampling, not crash.
+    const smallSrc = join(dir, "small.png");
+    await sharp({ create: { width: 300, height: 300, channels: 4, background: { r: 0, g: 128, b: 255, alpha: 1 } } })
+      .png().toFile(smallSrc);
+    const out = join(dir, "out-fallback.png");
+    const needsUpscale: Recipe = { ...tee, upscale: "always", maxUpscale: 4 };
+    const result = await runRecipe({ inputPath: smallSrc, outputPath: out, recipe: needsUpscale, realesrganBin: "/nonexistent" });
+    const meta = await sharp(result.outputPath).metadata();
+    expect(meta.width).toBe(1200);
+    expect(meta.height).toBe(1500);
+    expect(result.upscaled).toBe(false);
+    expect(result.warning).toMatch(/fell back to resampling/i);
+  });
 });

@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 mkdir -p bin && cd bin
 VER="v0.2.0"
-ZIP="realesrgan-ncnn-vulkan-20220424-macos.zip"
+ZIP="realesrgan-ncnn-vulkan-${VER}-macos.zip"
 URL="https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/${VER}/${ZIP}"
 echo "Downloading $URL"
 curl -L -o realesrgan.zip "$URL"
