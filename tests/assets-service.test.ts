@@ -30,10 +30,13 @@ describe("AssetsService.ingestFromPath", () => {
     const svc = new AssetsService(d as any, { dataDir: "/data", airtable: { token: "p", baseId: "b", designsTableId: "t" }, realesrganBin: "x" });
     const res = await svc.ingestFromPath("/tmp/art.png", { brand: "TFH", name: "art", airtableDesignId: "rec1", tags: ["new"] });
     expect(d.eagle.ensureFolder).toHaveBeenCalledWith("TFH");
-    expect(d.eagle.addFromPath).toHaveBeenCalled();
-    // annotation JSON written with the link
-    const updateArg = d.eagle.updateItem.mock.calls[0][1];
-    expect(JSON.parse(updateArg.annotation)).toMatchObject({ airtableDesignId: "rec1", brand: "TFH" });
+    // annotation JSON + tags are written via addFromPath in one call (no racy re-update)
+    const [addPath, addOpts] = d.eagle.addFromPath.mock.calls[0];
+    expect(addPath).toBe("/tmp/art.png");
+    expect(addOpts.folderId).toBe("TFHID");
+    expect(addOpts.tags).toEqual(["new"]);
+    expect(JSON.parse(addOpts.annotation)).toMatchObject({ airtableDesignId: "rec1", brand: "TFH" });
+    expect(d.eagle.updateItem).not.toHaveBeenCalled();
     expect(d.backlink).toHaveBeenCalledWith(expect.objectContaining({ designId: "rec1", eagleItemId: "ITEM1" }));
     expect(res.id).toBe("ITEM1");
   });

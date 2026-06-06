@@ -38,4 +38,42 @@ describe("EagleClient", () => {
     const c = new EagleClient("http://localhost:41595", "");
     await expect(c.itemList({})).rejects.toThrow(/Eagle API error/);
   });
+
+  it("retries a transient 5xx then succeeds", async () => {
+    let n = 0;
+    vi.spyOn(globalThis, "fetch").mockImplementation(() => {
+      n++;
+      if (n === 1) return Promise.resolve(new Response("err", { status: 500 }));
+      return jsonResponse({ status: "success", data: { id: "ITEM9", name: "a", ext: "png", tags: [], folders: [], annotation: "{}" } });
+    });
+    const c = new EagleClient("http://localhost:41595", "");
+    const item = await c.itemInfo("ITEM9");
+    expect(item.id).toBe("ITEM9");
+    expect(n).toBe(2); // first 500, retried once
+  });
+
+  it("does NOT retry a 4xx/logical error (fails fast)", async () => {
+    let n = 0;
+    vi.spyOn(globalThis, "fetch").mockImplementation(() => {
+      n++;
+      return jsonResponse({ status: "error", message: "bad" });
+    });
+    const c = new EagleClient("http://localhost:41595", "");
+    await expect(c.itemInfo("X")).rejects.toThrow(/Eagle API error/);
+    expect(n).toBe(1);
+  });
+
+  it("addFromPath returns the id Eagle puts in `data` (no list fallback)", async () => {
+    const calls: string[] = [];
+    vi.spyOn(globalThis, "fetch").mockImplementation((url) => {
+      calls.push(String(url));
+      return jsonResponse({ status: "success", data: "MQ2S95C9DDXSN" });
+    });
+    const c = new EagleClient("http://localhost:41595", "");
+    const id = await c.addFromPath("/tmp/x.png", { name: "x", folderId: "F1" });
+    expect(id).toBe("MQ2S95C9DDXSN");
+    // must NOT fall back to /api/item/list to resolve the id
+    expect(calls.some((u) => u.includes("/api/item/list"))).toBe(false);
+    expect(calls.some((u) => u.includes("/api/item/addFromPath"))).toBe(true);
+  });
 });

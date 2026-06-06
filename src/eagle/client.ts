@@ -22,18 +22,34 @@ export class EagleClient {
     return u.toString();
   }
 
+  // Eagle briefly returns 5xx for a freshly-added item while it indexes/generates a
+  // thumbnail, so transient 5xx and network blips are retried with a short backoff.
+  private static RETRIES = 4;
+  private static BACKOFF_MS = 200;
+
   private async call<T>(path: string, init?: RequestInit, query?: Record<string, string | number | undefined>): Promise<T> {
-    let res: Response;
-    try {
-      res = await fetch(this.url(path, query), init);
-    } catch (e) {
-      throw new Error(`Eagle unreachable at ${this.baseUrl}: ${(e as Error).message}`);
+    let lastErr = "";
+    for (let attempt = 0; attempt <= EagleClient.RETRIES; attempt++) {
+      if (attempt > 0) await new Promise((r) => setTimeout(r, EagleClient.BACKOFF_MS * attempt));
+      let res: Response;
+      try {
+        res = await fetch(this.url(path, query), init);
+      } catch (e) {
+        lastErr = `Eagle unreachable at ${this.baseUrl}: ${(e as Error).message}`;
+        continue; // network blip — retry
+      }
+      if (res.status >= 500) {
+        lastErr = `Eagle API error (${path}): ${res.status}`;
+        continue; // transient server error (e.g. read-after-write race) — retry
+      }
+      const body = await res.json().catch(() => ({ status: "error", message: "non-JSON response" }));
+      if (!res.ok || body?.status !== "success") {
+        // 4xx / logical error — not retriable, fail fast
+        throw new Error(`Eagle API error (${path}): ${body?.message ?? res.status}`);
+      }
+      return body.data as T;
     }
-    const body = await res.json().catch(() => ({ status: "error", message: "non-JSON response" }));
-    if (!res.ok || body?.status !== "success") {
-      throw new Error(`Eagle API error (${path}): ${body?.message ?? res.status}`);
-    }
-    return body.data as T;
+    throw new Error(lastErr || `Eagle API error (${path}): exhausted retries`);
   }
 
   async appInfo(): Promise<unknown> {
@@ -78,11 +94,10 @@ export class EagleClient {
   }
 
   /**
-   * Add an item from a local file path. Eagle does NOT return the new id,
-   * so we resolve it by listing the newest item in the folder and matching name.
+   * Add an item from a local file path. Eagle returns the new item id in `data`.
    */
   async addFromPath(path: string, opts: AddOptions): Promise<string> {
-    await this.call("/api/item/addFromPath", {
+    const id = await this.call<string>("/api/item/addFromPath", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -94,18 +109,15 @@ export class EagleClient {
         website: opts.website,
       }),
     });
-    const recent = await this.itemList({
-      limit: 10,
-      orderBy: "-CREATEDATE",
-      folders: opts.folderId,
-    });
-    const match = recent.find((i) => opts.name && i.name === opts.name) ?? recent[0];
-    if (!match) throw new Error("addFromPath: could not resolve new item id");
-    return match.id;
+    if (!id) throw new Error("addFromPath: Eagle did not return an item id");
+    return id;
   }
 
+  /**
+   * Add an item from a URL. Eagle returns the new item id in `data`.
+   */
   async addFromURL(url: string, opts: AddOptions): Promise<string> {
-    await this.call("/api/item/addFromURL", {
+    const id = await this.call<string>("/api/item/addFromURL", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -117,9 +129,7 @@ export class EagleClient {
         website: opts.website,
       }),
     });
-    const recent = await this.itemList({ limit: 10, orderBy: "-CREATEDATE", folders: opts.folderId });
-    const match = recent.find((i) => opts.name && i.name === opts.name) ?? recent[0];
-    if (!match) throw new Error("addFromURL: could not resolve new item id");
-    return match.id;
+    if (!id) throw new Error("addFromURL: Eagle did not return an item id");
+    return id;
   }
 }

@@ -59,11 +59,12 @@ export class AssetsService {
       source: opts.source ?? "api",
       processed: {},
     };
+    // addFromPath persists annotation + tags + folder in one call (verified against
+    // Eagle 4). A separate update right after races with thumbnail generation (500), so
+    // we rely on the add call to store the link.
     const id = await this.deps.eagle.addFromPath(path, {
       name: opts.name, folderId, tags: opts.tags, annotation: JSON.stringify(link),
     });
-    // Re-write the annotation to guarantee it is stored (addFromPath annotation support varies).
-    await this.writeLink(id, link, opts.tags);
     await this.deps.backlink({
       token: this.cfg.airtable.token, baseId: this.cfg.airtable.baseId, tableId: this.cfg.airtable.designsTableId,
       designId: opts.airtableDesignId, eagleItemId: id, eagleUrl: `eagle://item/${id}`,
@@ -75,7 +76,6 @@ export class AssetsService {
     const folderId = await this.deps.eagle.ensureFolder(opts.brand);
     const link: AssetLink = { airtableDesignId: opts.airtableDesignId, brand: opts.brand, source: opts.source ?? "api", processed: {} };
     const id = await this.deps.eagle.addFromURL(url, { name: opts.name, folderId, tags: opts.tags, annotation: JSON.stringify(link) });
-    await this.writeLink(id, link, opts.tags);
     await this.deps.backlink({
       token: this.cfg.airtable.token, baseId: this.cfg.airtable.baseId, tableId: this.cfg.airtable.designsTableId,
       designId: opts.airtableDesignId, eagleItemId: id, eagleUrl: `eagle://item/${id}`,
