@@ -26,6 +26,7 @@ export interface AssetsConfig {
   dataDir: string;
   airtable: { token: string; baseId: string; designsTableId: string };
   realesrganBin: string;
+  onIngested?: (itemId: string) => void; // e.g. autotag enqueue
 }
 
 export interface IngestOptions {
@@ -42,6 +43,8 @@ function parseLink(annotation: string): AssetLink {
 
 export class AssetsService {
   constructor(private deps: AssetsDeps, private cfg: AssetsConfig) {}
+
+  setOnIngested(cb: (itemId: string) => void): void { this.cfg.onIngested = cb; }
 
   private originalPath(itemId: string): string {
     return join(this.cfg.dataDir, "originals", itemId);
@@ -69,6 +72,7 @@ export class AssetsService {
       token: this.cfg.airtable.token, baseId: this.cfg.airtable.baseId, tableId: this.cfg.airtable.designsTableId,
       designId: opts.airtableDesignId, eagleItemId: id, eagleUrl: `eagle://item/${id}`,
     });
+    this.cfg.onIngested?.(id);
     return this.deps.eagle.itemInfo(id);
   }
 
@@ -80,6 +84,7 @@ export class AssetsService {
       token: this.cfg.airtable.token, baseId: this.cfg.airtable.baseId, tableId: this.cfg.airtable.designsTableId,
       designId: opts.airtableDesignId, eagleItemId: id, eagleUrl: `eagle://item/${id}`,
     });
+    this.cfg.onIngested?.(id);
     return this.deps.eagle.itemInfo(id);
   }
 
