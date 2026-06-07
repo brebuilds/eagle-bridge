@@ -72,7 +72,6 @@ export class AssetsService {
       token: this.cfg.airtable.token, baseId: this.cfg.airtable.baseId, tableId: this.cfg.airtable.designsTableId,
       designId: opts.airtableDesignId, eagleItemId: id, eagleUrl: `eagle://item/${id}`,
     });
-    this.cfg.onIngested?.(id);
     return this.deps.eagle.itemInfo(id);
   }
 
@@ -84,7 +83,6 @@ export class AssetsService {
       token: this.cfg.airtable.token, baseId: this.cfg.airtable.baseId, tableId: this.cfg.airtable.designsTableId,
       designId: opts.airtableDesignId, eagleItemId: id, eagleUrl: `eagle://item/${id}`,
     });
-    this.cfg.onIngested?.(id);
     return this.deps.eagle.itemInfo(id);
   }
 
@@ -102,6 +100,7 @@ export class AssetsService {
     const originalsDir = join(this.cfg.dataDir, "originals");
     await mkdir(originalsDir, { recursive: true });
     await copyFile(tmpPath, join(originalsDir, `${item.id}.${ext}`));
+    this.cfg.onIngested?.(item.id);
     return item;
   }
 

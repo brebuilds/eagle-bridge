@@ -1,4 +1,7 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { AssetsService } from "../src/assets/service.js";
 import type { EagleItem, Recipe } from "../src/types.js";
 
@@ -39,6 +42,39 @@ describe("AssetsService.ingestFromPath", () => {
     expect(d.eagle.updateItem).not.toHaveBeenCalled();
     expect(d.backlink).toHaveBeenCalledWith(expect.objectContaining({ designId: "rec1", eagleItemId: "ITEM1" }));
     expect(res.id).toBe("ITEM1");
+  });
+});
+
+describe("onIngested hook", () => {
+  let tmpDir: string;
+  beforeEach(() => { tmpDir = mkdtempSync(join(tmpdir(), "eb-svc-")); });
+  afterEach(() => rmSync(tmpDir, { recursive: true, force: true }));
+
+  it("ingestFromPathBytes fires onIngested once with the item id after the original is on disk", async () => {
+    const d = fakeDeps();
+    const onIngested = vi.fn();
+    const svc = new AssetsService(
+      d as any,
+      { dataDir: tmpDir, airtable: { token: "p", baseId: "b", designsTableId: "t" }, realesrganBin: "x", onIngested },
+    );
+    const bytes = new Uint8Array([0xff, 0xd8, 0xff]); // minimal fake jpeg bytes
+    await svc.ingestFromPathBytes(bytes, "art.jpeg", { brand: "TFH", name: "art" });
+    expect(onIngested).toHaveBeenCalledOnce();
+    expect(onIngested).toHaveBeenCalledWith("ITEM1");
+    // Verify the original was written before the hook fired (file must exist now)
+    const { access } = await import("node:fs/promises");
+    await expect(access(join(tmpDir, "originals", "ITEM1.jpeg"))).resolves.toBeUndefined();
+  });
+
+  it("ingestFromURL does NOT fire onIngested", async () => {
+    const d = fakeDeps();
+    const onIngested = vi.fn();
+    const svc = new AssetsService(
+      d as any,
+      { dataDir: "/data", airtable: { token: "p", baseId: "b", designsTableId: "t" }, realesrganBin: "x", onIngested },
+    );
+    await svc.ingestFromURL("https://example.com/art.png", { brand: "TFH", name: "art" });
+    expect(onIngested).not.toHaveBeenCalled();
   });
 });
 

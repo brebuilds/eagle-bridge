@@ -13,6 +13,7 @@ import { productTypesRoutes } from "./routes/productTypes.js";
 import { OllamaVision } from "./vision/ollama.js";
 import { extractColors } from "./autotag/palette.js";
 import { Tagger } from "./autotag/tagger.js";
+import { resolveOriginalPath } from "./autotag/originals.js";
 import { AutotagQueue } from "./autotag/queue.js";
 import { autotagRoutes } from "./routes/autotag.js";
 
@@ -37,7 +38,7 @@ export function buildApp(cfg: Config): { app: Hono; autotagQueue: AutotagQueue }
       eagle,
       vision,
       extractColors,
-      originalPathFor: async (item) => join(cfg.dataDir, "originals", `${item.id}.${item.ext || "png"}`),
+      originalPathFor: (item) => resolveOriginalPath(join(cfg.dataDir, "originals"), item.id, item.ext || "png"),
       now: () => new Date().toISOString(),
     },
     cfg.ollamaVisionModel,
