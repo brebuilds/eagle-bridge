@@ -1,10 +1,10 @@
 // Keyword -> brand map, seeded from the brand skills. Edit freely as data.
 const BRAND_KEYWORDS: Record<string, string[]> = {
-  TFH: ["deadhead", "grateful dead", "stealie", "phish", "jam band", "jamband", "lot", "psychedelic skull", "dancing bear"],
-  Coastly: ["coastal", "beach", "sun-washed", "seaside", "nautical", "ocean", "shore"],
-  "OIB.Guide": ["ocean isle beach", "oib", "brunswick county", "sunset beach", "holden beach"],
-  "Funky Legs": ["leggings", "all-over print", "all over print", "patterned tights"],
-  "Design & Chill": ["sarcasm", "snarky", "meme", "trainwreck"],
+  ORB: ["moon skull", "cosmic wanderer", "echo trail", "jam trail", "jamtrail", "lot", "psychedelic skull", "orbit bear"],
+  Tidewash: ["coastal", "beach", "sun-washed", "seaside", "nautical", "ocean", "shore"],
+  "Driftport.Guide": ["driftport beach", "driftport", "harbor county", "twilight beach", "anchor beach"],
+  "Wild Tights": ["leggings", "all-over print", "all over print", "patterned tights"],
+  "Chill Draft": ["sarcasm", "snarky", "meme", "hot mess"],
 };
 
 /** Infer which brands a set of free terms fits. Case-insensitive, deduped, possibly empty. */

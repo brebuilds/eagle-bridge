@@ -13,7 +13,7 @@ const base = {
   DATA_DIR: "/tmp/eb",
   RECIPE_TTL_MS: "3600000",
   REALESRGAN_BIN: "/tmp/bin/realesrgan",
-  OLLAMA_URL: "http://100.113.39.78:11434",
+  OLLAMA_URL: "http://ollama-host.example:11434",
   OLLAMA_VISION_MODEL: "llama3.2-vision:11b",
   AUTOTAG_ON_INGEST: "true",
   AUTOTAG_CONCURRENCY: "1",
@@ -38,12 +38,17 @@ describe("loadConfig", () => {
 
   it("parses autotag config with sensible defaults", () => {
     const c = loadConfig(base);
-    expect(c.ollamaUrl).toBe("http://100.113.39.78:11434");
+    expect(c.ollamaUrl).toBe("http://ollama-host.example:11434");
     expect(c.ollamaVisionModel).toBe("llama3.2-vision:11b");
     expect(c.autotagOnIngest).toBe(true);
     expect(c.autotagConcurrency).toBe(1);
     expect(c.autotagImagePx).toBe(640);
     const { AUTOTAG_ON_INGEST, ...noFlag } = base;
     expect(loadConfig(noFlag).autotagOnIngest).toBe(false); // default off when unset
+  });
+
+  it("defaults OLLAMA_URL to localhost when unset", () => {
+    const { OLLAMA_URL, ...noOllamaUrl } = base;
+    expect(loadConfig(noOllamaUrl).ollamaUrl).toBe("http://localhost:11434");
   });
 });

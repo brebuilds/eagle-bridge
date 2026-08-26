@@ -2,21 +2,21 @@ import { describe, it, expect } from "vitest";
 import { inferBrands } from "../src/autotag/brands.js";
 
 describe("inferBrands", () => {
-  it("maps deadhead/jam terms to TFH", () => {
-    expect(inferBrands(["grateful dead", "stealie", "jam band"])).toContain("TFH");
+  it("maps jam-trail terms to ORB", () => {
+    expect(inferBrands(["cosmic wanderer", "moon skull", "jam trail"])).toContain("ORB");
   });
-  it("maps coastal terms to Coastly and OIB to OIB.Guide", () => {
-    const b = inferBrands(["beach vibes", "coastal", "ocean isle beach"]);
-    expect(b).toContain("Coastly");
-    expect(b).toContain("OIB.Guide");
+  it("maps coastal terms to Tidewash and driftport to Driftport.Guide", () => {
+    const b = inferBrands(["beach vibes", "coastal", "driftport beach"]);
+    expect(b).toContain("Tidewash");
+    expect(b).toContain("Driftport.Guide");
   });
-  it("maps leggings/all-over to Funky Legs", () => {
-    expect(inferBrands(["all-over print leggings"])).toContain("Funky Legs");
+  it("maps leggings/all-over to Wild Tights", () => {
+    expect(inferBrands(["all-over print leggings"])).toContain("Wild Tights");
   });
   it("returns [] when nothing matches", () => {
     expect(inferBrands(["dollar general", "90s nostalgia"])).toEqual([]);
   });
   it("dedupes and is case-insensitive", () => {
-    expect(inferBrands(["DEADHEAD", "deadhead"])).toEqual(["TFH"]);
+    expect(inferBrands(["MOON SKULL", "moon skull"])).toEqual(["ORB"]);
   });
 });

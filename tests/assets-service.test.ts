@@ -11,10 +11,10 @@ const tee: Recipe = {
 };
 
 function fakeDeps() {
-  const item: EagleItem = { id: "ITEM1", name: "art", ext: "png", tags: ["new"], folders: ["TFHID"], annotation: "{}" };
+  const item: EagleItem = { id: "ITEM1", name: "art", ext: "png", tags: ["new"], folders: ["ORBID"], annotation: "{}" };
   return {
     eagle: {
-      ensureFolder: vi.fn().mockResolvedValue("TFHID"),
+      ensureFolder: vi.fn().mockResolvedValue("ORBID"),
       addFromPath: vi.fn().mockResolvedValue("ITEM1"),
       addFromURL: vi.fn().mockResolvedValue("ITEM1"),
       itemInfo: vi.fn().mockResolvedValue(item),
@@ -31,14 +31,14 @@ describe("AssetsService.ingestFromPath", () => {
   it("ensures the brand folder, adds the item, writes annotation, back-links Airtable", async () => {
     const d = fakeDeps();
     const svc = new AssetsService(d as any, { dataDir: "/data", airtable: { token: "p", baseId: "b", designsTableId: "t" }, realesrganBin: "x" });
-    const res = await svc.ingestFromPath("/tmp/art.png", { brand: "TFH", name: "art", airtableDesignId: "rec1", tags: ["new"] });
-    expect(d.eagle.ensureFolder).toHaveBeenCalledWith("TFH");
+    const res = await svc.ingestFromPath("/tmp/art.png", { brand: "ORB", name: "art", airtableDesignId: "rec1", tags: ["new"] });
+    expect(d.eagle.ensureFolder).toHaveBeenCalledWith("ORB");
     // annotation JSON + tags are written via addFromPath in one call (no racy re-update)
     const [addPath, addOpts] = d.eagle.addFromPath.mock.calls[0];
     expect(addPath).toBe("/tmp/art.png");
-    expect(addOpts.folderId).toBe("TFHID");
+    expect(addOpts.folderId).toBe("ORBID");
     expect(addOpts.tags).toEqual(["new"]);
-    expect(JSON.parse(addOpts.annotation)).toMatchObject({ airtableDesignId: "rec1", brand: "TFH" });
+    expect(JSON.parse(addOpts.annotation)).toMatchObject({ airtableDesignId: "rec1", brand: "ORB" });
     expect(d.eagle.updateItem).not.toHaveBeenCalled();
     expect(d.backlink).toHaveBeenCalledWith(expect.objectContaining({ designId: "rec1", eagleItemId: "ITEM1" }));
     expect(res.id).toBe("ITEM1");
@@ -58,7 +58,7 @@ describe("onIngested hook", () => {
       { dataDir: tmpDir, airtable: { token: "p", baseId: "b", designsTableId: "t" }, realesrganBin: "x", onIngested },
     );
     const bytes = new Uint8Array([0xff, 0xd8, 0xff]); // minimal fake jpeg bytes
-    await svc.ingestFromPathBytes(bytes, "art.jpeg", { brand: "TFH", name: "art" });
+    await svc.ingestFromPathBytes(bytes, "art.jpeg", { brand: "ORB", name: "art" });
     expect(onIngested).toHaveBeenCalledOnce();
     expect(onIngested).toHaveBeenCalledWith("ITEM1");
     // Verify the original was written before the hook fired (file must exist now)
@@ -73,7 +73,7 @@ describe("onIngested hook", () => {
       d as any,
       { dataDir: "/data", airtable: { token: "p", baseId: "b", designsTableId: "t" }, realesrganBin: "x", onIngested },
     );
-    await svc.ingestFromURL("https://example.com/art.png", { brand: "TFH", name: "art" });
+    await svc.ingestFromURL("https://example.com/art.png", { brand: "ORB", name: "art" });
     expect(onIngested).not.toHaveBeenCalled();
   });
 });

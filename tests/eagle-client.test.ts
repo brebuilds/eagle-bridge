@@ -24,12 +24,12 @@ describe("EagleClient", () => {
   it("ensureFolder returns existing folder id without creating", async () => {
     vi.spyOn(globalThis, "fetch").mockImplementation((url) => {
       if (String(url).includes("/api/folder/list")) {
-        return jsonResponse({ status: "success", data: [{ id: "TFHID", name: "TFH", children: [] }] });
+        return jsonResponse({ status: "success", data: [{ id: "ORBID", name: "ORB", children: [] }] });
       }
       throw new Error("should not create");
     });
     const c = new EagleClient("http://localhost:41595", "");
-    expect(await c.ensureFolder("TFH")).toBe("TFHID");
+    expect(await c.ensureFolder("ORB")).toBe("ORBID");
   });
 
   it("throws a clear error when Eagle returns non-success", async () => {
