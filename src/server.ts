@@ -8,6 +8,7 @@ import { backlinkDesign } from "./airtable/designs.js";
 import { AssetsService } from "./assets/service.js";
 import { bearerAuth } from "./middleware/auth.js";
 import { healthRoute } from "./routes/health.js";
+import { thumbnailRoute } from "./routes/thumbnail.js";
 import { assetsRoutes } from "./routes/assets.js";
 import { productTypesRoutes } from "./routes/productTypes.js";
 import { foldersRoute } from "./routes/folders.js";
@@ -63,6 +64,7 @@ export function buildApp(cfg: Config): { app: Hono; autotagQueue: AutotagQueue }
   app.use("/api/autotag/*", bearerAuth(cfg.bridgeToken));
   app.use("/api/folders", bearerAuth(cfg.bridgeToken));
 
+  app.route("/", thumbnailRoute({ thumbnailPath: (id) => eagle.thumbnailPath(id) }));
   app.route("/", assetsRoutes(service));
   app.route("/", productTypesRoutes(recipes));
   app.route("/", autotagRoutes(autotagQueue));
