@@ -8,7 +8,7 @@ interface AddOptions {
   website?: string;
 }
 
-interface EagleFolder { id: string; name: string; children?: EagleFolder[] }
+export interface EagleFolder { id: string; name: string; children?: EagleFolder[] }
 
 export class EagleClient {
   constructor(private baseUrl: string, private token: string) {}
