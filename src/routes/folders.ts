@@ -9,12 +9,8 @@ export interface FoldersDeps {
 export function foldersRoute(deps: FoldersDeps): Hono {
   const app = new Hono();
   app.get("/api/folders", async (c) => {
-    try {
-      const tree = await deps.folderList();
-      return c.json({ folders: flattenFolders(tree) });
-    } catch {
-      return c.json({ error: "eagle unreachable" }, 503);
-    }
+    const tree = await deps.folderList();
+    return c.json({ folders: flattenFolders(tree) });
   });
   return app;
 }

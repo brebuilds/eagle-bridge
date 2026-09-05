@@ -20,9 +20,16 @@ describe("foldersRoute", () => {
   it("returns 503 when Eagle is unreachable", async () => {
     const app = new Hono();
     app.route("/", foldersRoute({
-      folderList: vi.fn().mockRejectedValue(new Error("eagle unreachable")),
+      folderList: vi.fn().mockRejectedValue(new Error("Eagle unreachable at http://example.com")),
     }));
+    app.onError((err, c) => {
+      const msg = err.message ?? "internal error";
+      const status = /unreachable/i.test(msg) ? 503 : /required|unknown product type/i.test(msg) ? 400 : 500;
+      return c.json({ error: msg }, status);
+    });
     const res = await app.request("/api/folders");
     expect(res.status).toBe(503);
+    const body = await res.json();
+    expect(body.error).toContain("Eagle unreachable");
   });
 });
