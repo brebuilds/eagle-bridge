@@ -10,6 +10,7 @@ import { bearerAuth } from "./middleware/auth.js";
 import { healthRoute } from "./routes/health.js";
 import { assetsRoutes } from "./routes/assets.js";
 import { productTypesRoutes } from "./routes/productTypes.js";
+import { foldersRoute } from "./routes/folders.js";
 import { OllamaVision } from "./vision/ollama.js";
 import { extractColors } from "./autotag/palette.js";
 import { Tagger } from "./autotag/tagger.js";
@@ -60,10 +61,12 @@ export function buildApp(cfg: Config): { app: Hono; autotagQueue: AutotagQueue }
   app.use("/api/product-types", bearerAuth(cfg.bridgeToken));
   app.use("/api/product-types/*", bearerAuth(cfg.bridgeToken));
   app.use("/api/autotag/*", bearerAuth(cfg.bridgeToken));
+  app.use("/api/folders", bearerAuth(cfg.bridgeToken));
 
   app.route("/", assetsRoutes(service));
   app.route("/", productTypesRoutes(recipes));
   app.route("/", autotagRoutes(autotagQueue));
+  app.route("/", foldersRoute({ folderList: () => eagle.folderList() }));
 
   // Centralized error → JSON.
   app.onError((err, c) => {
