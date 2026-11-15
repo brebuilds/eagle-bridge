@@ -1,5 +1,7 @@
 # Eagle Bridge
 
+[![CI](https://github.com/brebuilds/eagle-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/brebuilds/eagle-bridge/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A local HTTP service that turns the [Eagle](https://eagle.cool) app into a shared,
 network-reachable print-on-demand (POD) asset store: push designs in, search/browse them,
 tag them, run per-product-type print-ready image processing (upscale + resize + bleed +
